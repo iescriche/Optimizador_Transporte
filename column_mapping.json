@@ -1,0 +1,8 @@
+{
+  "address": "DIRECCION",
+  "latitude": "LATITUD",
+  "longitude": "LONGITUD",
+  "route": "RUTA",
+  "time_window_start": "HORA_INI",
+  "time_window_end": "HORA_FIN"
+}

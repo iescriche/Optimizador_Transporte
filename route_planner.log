@@ -1,0 +1,109 @@
+2025-05-26 12:48:50,894 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:48:55,264 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:48:57,714 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:49:00,151 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:51:44,111 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:51:46,622 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:51:49,904 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:51:53,619 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:51:54,047 - WARNING - df_today vacío
+2025-05-26 12:51:56,755 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:51:57,145 - WARNING - df_today vacío
+2025-05-26 12:51:59,011 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:51:59,692 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:52:00,243 - INFO - Mapeo de columnas guardado
+2025-05-26 12:52:04,850 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:52:05,600 - INFO - Iniciando cálculo de rutas
+2025-05-26 12:52:05,602 - INFO - Calculando nueva matriz desde ORS API
+2025-05-26 12:52:08,137 - INFO - Matriz guardada en caché: cache/matrix_64a21ab3d2bb22e8b5ac27ca797a1d9f.pkl
+2025-05-26 12:53:08,346 - ERROR - Error calculando rutas: name 'depot' is not defined
+2025-05-26 12:54:05,123 - INFO - Iniciando Standard Route Planner
+2025-05-26 12:54:07,485 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:02:59,835 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:03:03,318 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:03:06,576 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:03:09,503 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:03:13,968 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:03:14,610 - INFO - Iniciando cálculo de rutas
+2025-05-26 13:03:14,627 - INFO - Usando matriz en caché: cache/matrix_64a21ab3d2bb22e8b5ac27ca797a1d9f.pkl
+2025-05-26 13:03:14,630 - ERROR - Error calculando rutas: Wrong number or type of arguments for overloaded function 'new_RoutingIndexManager'.
+  Possible C/C++ prototypes are:
+    operations_research::RoutingIndexManager::RoutingIndexManager(int,int,operations_research::RoutingIndexManager::NodeIndex)
+    operations_research::RoutingIndexManager::RoutingIndexManager(int,int,std::vector< operations_research::RoutingIndexManager::NodeIndex > const &,std::vector< operations_research::RoutingIndexManager::NodeIndex > const &)
+
+2025-05-26 13:03:24,582 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:03:25,060 - INFO - Clave ORS válida
+2025-05-26 13:03:26,441 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:03:26,996 - INFO - Iniciando cálculo de rutas
+2025-05-26 13:03:26,998 - INFO - Usando matriz en caché: cache/matrix_64a21ab3d2bb22e8b5ac27ca797a1d9f.pkl
+2025-05-26 13:03:27,000 - ERROR - Error calculando rutas: Wrong number or type of arguments for overloaded function 'new_RoutingIndexManager'.
+  Possible C/C++ prototypes are:
+    operations_research::RoutingIndexManager::RoutingIndexManager(int,int,operations_research::RoutingIndexManager::NodeIndex)
+    operations_research::RoutingIndexManager::RoutingIndexManager(int,int,std::vector< operations_research::RoutingIndexManager::NodeIndex > const &,std::vector< operations_research::RoutingIndexManager::NodeIndex > const &)
+
+2025-05-26 13:04:15,012 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:04:19,054 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:04:20,094 - INFO - Iniciando cálculo de rutas
+2025-05-26 13:04:20,096 - INFO - Usando matriz en caché: cache/matrix_64a21ab3d2bb22e8b5ac27ca797a1d9f.pkl
+2025-05-26 13:04:20,100 - ERROR - Error calculando rutas: Wrong number or type of arguments for overloaded function 'new_RoutingIndexManager'.
+  Possible C/C++ prototypes are:
+    operations_research::RoutingIndexManager::RoutingIndexManager(int,int,operations_research::RoutingIndexManager::NodeIndex)
+    operations_research::RoutingIndexManager::RoutingIndexManager(int,int,std::vector< operations_research::RoutingIndexManager::NodeIndex > const &,std::vector< operations_research::RoutingIndexManager::NodeIndex > const &)
+
+2025-05-26 13:11:32,356 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:11:34,792 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:11:37,802 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:11:40,054 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:11:43,262 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:11:43,562 - INFO - Mapeo de columnas guardado
+2025-05-26 13:11:53,762 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:11:54,333 - INFO - Iniciando cálculo de rutas
+2025-05-26 13:11:54,336 - INFO - Calculando nueva matriz desde ORS API
+2025-05-26 13:11:56,863 - INFO - Matriz guardada en caché: cache/matrix_64a21ab3d2bb22e8b5ac27ca797a1d9f.pkl
+2025-05-26 13:11:56,933 - ERROR - Índice del depósito inválido: 0
+2025-05-26 13:17:47,482 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:17:50,211 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:17:53,420 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:17:56,436 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:17:59,796 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:18:00,673 - INFO - Iniciando cálculo de rutas
+2025-05-26 13:18:00,698 - INFO - Usando matriz en caché: cache/matrix_64a21ab3d2bb22e8b5ac27ca797a1d9f.pkl
+2025-05-26 13:19:07,248 - INFO - Plan guardado en plans/2025-05-26_plan_fc9d2d53.json
+2025-05-26 13:19:07,248 - INFO - Iniciando cálculo de KPIs
+2025-05-26 13:19:07,249 - INFO - KPIs calculados para Vehículo 1: Distancia=273.70km, Tiempo=290.00min, Coste=86.50€
+2025-05-26 13:19:07,249 - INFO - KPIs calculados para Vehículo 2: Distancia=376.10km, Tiempo=267.00min, Coste=88.18€
+2025-05-26 13:19:07,249 - INFO - KPIs calculados para Vehículo 3: Distancia=265.31km, Tiempo=302.00min, Coste=88.72€
+2025-05-26 13:19:07,250 - INFO - KPIs globales: km_per_order=39.79, time_per_order=37.35min, euro_per_order=11.45
+2025-05-26 13:19:07,253 - INFO - Rutas calculadas con éxito
+2025-05-26 13:19:09,183 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:19:11,090 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:19:13,654 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:19:17,234 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:19:21,123 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:19:22,905 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:19:23,704 - INFO - Iniciando cálculo de rutas
+2025-05-26 13:19:23,706 - INFO - Usando matriz en caché: cache/matrix_64a21ab3d2bb22e8b5ac27ca797a1d9f.pkl
+2025-05-26 13:19:32,832 - INFO - Plan guardado en plans/2025-05-26_plan_67b24fd9.json
+2025-05-26 13:19:32,832 - INFO - Iniciando cálculo de KPIs
+2025-05-26 13:19:32,833 - INFO - KPIs calculados para Vehículo 1: Distancia=1008.61km, Tiempo=824.00min, Coste=261.66€
+2025-05-26 13:19:32,833 - INFO - KPIs calculados para Vehículo 2: Distancia=493.34km, Tiempo=466.00min, Coste=142.68€
+2025-05-26 13:19:32,833 - INFO - KPIs globales: km_per_order=60.08, time_per_order=51.60min, euro_per_order=16.17
+2025-05-26 13:19:32,836 - INFO - Rutas calculadas con éxito
+2025-05-26 13:19:33,862 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:19:35,606 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:19:39,094 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:19:40,488 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:26:02,477 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:26:06,482 - INFO - Iniciando Standard Route Planner
+2025-05-26 13:27:00,188 - ERROR - Error en carga automática: name 'load_data' is not defined
+2025-05-26 13:27:09,616 - ERROR - Error procesando datos: name 'load_data' is not defined
+2025-05-26 13:27:12,690 - INFO - Mapeo de columnas guardado
+2025-05-26 13:27:12,691 - ERROR - Error procesando datos: name 'load_data' is not defined
+2025-05-26 13:28:13,332 - INFO - Iniciando cálculo de rutas
+2025-05-26 13:28:13,344 - INFO - Usando matriz en caché: cache/matrix_64a21ab3d2bb22e8b5ac27ca797a1d9f.pkl
+2025-05-26 13:28:13,346 - ERROR - Error calculando rutas: cannot access local variable 'max_stops_per_vehicle' where it is not associated with a value
+2025-05-26 13:36:59,724 - INFO - Iniciando cálculo de rutas
+2025-05-26 13:36:59,743 - INFO - Usando matriz en caché: cache/matrix_64a21ab3d2bb22e8b5ac27ca797a1d9f.pkl
+2025-05-26 13:38:10,011 - INFO - Iniciando cálculo de rutas
+2025-05-26 13:38:10,013 - INFO - Usando matriz en caché: cache/matrix_64a21ab3d2bb22e8b5ac27ca797a1d9f.pkl
+2025-05-26 13:41:10,033 - ERROR - Error calculando rutas: calculate_kpis() missing 1 required positional argument: 'eta'

@@ -1,0 +1,8 @@
+streamlit
+pandas
+folium
+streamlit-folium
+pyyaml
+requests
+tenacity
+ortools
