@@ -1,12 +1,15 @@
-from typing import List, Optional, Tuple
+from typing import List, Tuple, Optional
 import streamlit as st
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 import math
 import logging
 
+# Configurar logging
+logging.basicConfig(filename="route_planner.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
 def validate_matrices(dist_m: List[List[float]], time_m: List[List[int]], n: int) -> None:
-    """Validate distance and time matrices."""
-    print("Validando matrices...")
+    """Valida matrices de distancia y tiempo."""
+    logging.info("Validando matrices...")
     if not isinstance(dist_m, list) or not isinstance(time_m, list):
         raise ValueError(f"Distance or time matrix is not a list: dist_m={type(dist_m)}, time_m={type(time_m)}")
     if not (len(dist_m) == n and all(isinstance(row, list) and len(row) == n for row in dist_m)):
@@ -17,7 +20,7 @@ def validate_matrices(dist_m: List[List[float]], time_m: List[List[int]], n: int
         raise ValueError("Distance matrix contains negative values.")
     if any(time < 0 for row in time_m for time in row):
         raise ValueError("Time matrix contains negative values.")
-    print("Matrices validadas correctamente.")
+    logging.info("Matrices validadas correctamente.")
 
 def build_cost_matrix(
     dist_m: List[List[float]],      # metros
@@ -27,18 +30,18 @@ def build_cost_matrix(
     driver_price_h: float           # €/hora
 ) -> List[List[int]]:
     """Devuelve matriz de coste en céntimos (int) para evitar floats."""
-    print("Construyendo matriz de costos...")
+    logging.info("Construyendo matriz de costos...")
     n = len(dist_m)
     cost = [[0]*n for _ in range(n)]
-    c_km = fuel_price * fuel_consumption / 100          # €/km
-    print(f"Costo por km: {c_km} €/km")
+    c_km = fuel_price * fuel_consumption / 100  # €/km
+    logging.debug("Costo por km: %.4f €/km", c_km)
     for i in range(n):
         for j in range(n):
-            km = dist_m[i][j] / 1_000                 # metros → km
-            hrs = time_m[i][j] / 60                    # minutos → horas
+            km = dist_m[i][j] / 1_000  # metros → km
+            hrs = time_m[i][j] / 60    # minutos → horas
             euro = km * c_km + hrs * driver_price_h
-            cost[i][j] = int(round(euro * 100))           # céntimos
-    print("Matriz de costos construida correctamente.")
+            cost[i][j] = int(round(euro * 100))  # céntimos
+    logging.info("Matriz de costos construida correctamente.")
     return cost
 
 def build_routing_model(
@@ -46,7 +49,7 @@ def build_routing_model(
     time_m: List[List[int]] = None,
     arc_cost_m: List[List[int]] = None,
     vehicles: int = 1,
-    depot: int = 0,
+    depot_idx: int = 0,
     service_time: int = 0,
     start_min: int = 0,
     balance: bool = True,
@@ -57,48 +60,44 @@ def build_routing_model(
     cost_mode: bool = False,
     time_windows: List[Tuple[int, int]] = None
 ) -> Tuple[pywrapcp.RoutingIndexManager, pywrapcp.RoutingModel, str]:
-    """Create and return (manager, routing, time_dim) for VRP."""
-    print("Construyendo modelo de ruteo...")
+    """Crea y devuelve (manager, routing, time_dim)."""
+    logging.info("Construyendo modelo de ruteo con %d nodos, %d vehículos", len(dist_m or arc_cost_m), vehicles)
     n = len(dist_m or arc_cost_m)
     
     # Validar argumentos
     if vehicles < 1:
-        print("Error: El número de vehículos debe ser positivo.")
         raise ValueError("Number of vehicles must be positive.")
-    if not isinstance(depot, int) or depot < 0 or depot >= n:
-        print(f"Error: Índice del depósito {depot} fuera de rango [0, {n-1}].")
-        raise ValueError(f"Depot index {depot} out of range [0, {n-1}].")
-    if service_time < 0:
-        print("Error: El tiempo de servicio no puede ser negativo.")
-        raise ValueError("Service time cannot be negative.")
+    if not isinstance(depot_idx, int) or depot_idx < 0 or depot_idx >= n:
+        raise ValueError(f"Depot index {depot_idx} out of range [0, {n-1}].")
+    if not isinstance(service_time, int) or service_time < 0:
+        raise ValueError(f"Service time must be non-negative: {service_time}")
+    if not isinstance(start_min, int) or start_min < 0:
+        raise ValueError(f"Start time must be non-negative: {start_min}")
+    if not isinstance(max_minutes, int) or max_minutes < 0:
+        raise ValueError(f"Max minutes must be non-negative: {max_minutes}")
+    if max_minutes > 2**63 - 1:
+        raise ValueError(f"max_minutes exceeds int64_t limit: {max_minutes}")
     if n < 1:
-        print("Error: El número de nodos debe ser positivo.")
         raise ValueError("Number of nodes must be positive.")
-    
+
     if cost_mode:
-        print("Modo de costo activado, validando arc_cost_m y time_m...")
         validate_matrices(arc_cost_m, time_m, n)
     else:
-        print("Modo de distancia activado, validando dist_m y time_m...")
         validate_matrices(dist_m, time_m, n)
 
     if time_windows and len(time_windows) != n:
-        print(f"Error: time_windows debe tener longitud {n}, pero tiene {len(time_windows)}.")
         raise ValueError(f"time_windows must have length {n}, got {len(time_windows)}")
 
-    print(f"Instanciando RoutingIndexManager: n={n}, vehicles={vehicles}, depot={depot}")
-    man = pywrapcp.RoutingIndexManager(n, vehicles, depot)
+    man = pywrapcp.RoutingIndexManager(n, vehicles, depot_idx)
     rout = pywrapcp.RoutingModel(man)
 
     # Cost callback
     if cost_mode:
-        print("Registrando callback de costo...")
         dist_cb = rout.RegisterTransitCallback(
             lambda i, j: arc_cost_m[man.IndexToNode(i)][man.IndexToNode(j)]
         )
     else:
-        max_dist = max(max(row) for row in dist_m) or 1
-        print(f"Max distancia: {max_dist}")
+        max_dist = max(max(row) for row in dist_m) if dist_m else 1
         dist_cb = rout.RegisterTransitCallback(
             lambda i, j: int(dist_m[man.IndexToNode(i)][man.IndexToNode(j)] / max_dist * 1000)
         )
@@ -106,17 +105,15 @@ def build_routing_model(
 
     # Fixed vehicle cost
     if price_per_hour > 0:
-        fixed_cents = int(round(2 * price_per_hour * 100))  # 2 hours base
-        print(f"Costo fijo por vehículo: {fixed_cents} céntimos")
+        fixed_cents = int(round(2 * price_per_hour * 100))
         for v in range(vehicles):
             rout.SetFixedCostOfVehicle(fixed_cents, v)
 
     # Time dimension
-    max_time = sum(max(row) for row in time_m) + service_time * n
-    print(f"Max tiempo: {max_time} minutos")
+    max_time = sum(max(row) for row in time_m) + service_time * n if time_m else 1440
     time_cb = rout.RegisterTransitCallback(
         lambda i, j: time_m[man.IndexToNode(i)][man.IndexToNode(j)] + (
-            service_time if man.IndexToNode(j) != depot else 0
+            service_time if man.IndexToNode(j) != depot_idx else 0
         )
     )
     rout.AddDimension(time_cb, 0, max(max_minutes, max_time), False, "Time")
@@ -124,29 +121,41 @@ def build_routing_model(
 
     # Apply time windows
     if time_windows:
-        print("Aplicando ventanas de tiempo...")
+        logging.info("Aplicando ventanas de tiempo para %d nodos", n)
         for node in range(n):
             idx = man.NodeToIndex(node)
             if idx < 0 or idx >= man.GetNumberOfIndices():
                 continue
             start, end = time_windows[node]
-            time_dim.CumulVar(idx).SetRange(start, end)
-            print(f"Nodo {node}: ventana de tiempo [{start}, {end}] minutos")
+            try:
+                start = int(max(0, min(start, 1440)))  # Clamp to [0, 1440]
+                end = int(max(start, min(end, 1440)))  # Ensure end >= start
+                if node == depot_idx:
+                    time_dim.CumulVar(idx).SetRange(start_min, start_min + max_minutes)
+                else:
+                    time_dim.CumulVar(idx).SetRange(start, end)
+                logging.debug("Nodo %d: ventana de tiempo [%d, %d] minutos", node, start, end)
+            except (TypeError, ValueError) as e:
+                logging.warning("Error en ventana de tiempo para nodo %d: %s. Usando [0, 1440].", node, e)
+                time_dim.CumulVar(idx).SetRange(0, 1440)
 
     # Apply maximum time limit per vehicle
     for v in range(vehicles):
         start = rout.Start(v)
         end = rout.End(v)
-        time_dim.CumulVar(start).SetRange(start_min, start_min)
-        time_dim.CumulVar(end).SetRange(start_min, start_min + max_minutes)
+        try:
+            time_dim.CumulVar(start).SetRange(start_min, start_min)
+            time_dim.CumulVar(end).SetRange(start_min, min(start_min + max_minutes, 2**63 - 1))
+        except Exception as e:
+            logging.error("Error setting time range for vehicle %d: %s", v, e)
+            raise ValueError(f"Invalid time range for vehicle {v}: {e}")
 
     # Stop count dimension
     if max_stops_per_vehicle is not None and vehicles > 1 and max_stops_per_vehicle < (n - 1):
         if max_stops_per_vehicle < 1:
-            print("Error: El máximo de paradas por vehículo debe ser positivo.")
             raise ValueError("Max stops per vehicle must be positive.")
         demand_cb = rout.RegisterUnaryTransitCallback(
-            lambda i: 1 if man.IndexToNode(i) != depot else 0
+            lambda i: 1 if man.IndexToNode(i) != depot_idx else 0
         )
         rout.AddDimension(demand_cb, 0, max_stops_per_vehicle, True, "Stops")
 
@@ -156,21 +165,21 @@ def build_routing_model(
         rout.GetDimensionOrDie("Cost" if cost_mode else "Distance").SetGlobalSpanCostCoefficient(100)
         if balance_threshold > 0:
             balance_cb = rout.RegisterUnaryTransitCallback(
-                lambda i: 1 if man.IndexToNode(i) != depot else 0
+                lambda i: 1 if man.IndexToNode(i) != depot_idx else 0
             )
             max_stops = max(1, int(n * balance_threshold / vehicles) + 2)
             rout.AddDimensionWithVehicleCapacity(
                 balance_cb, 0, [max_stops] * vehicles, True, "Balance"
             )
 
-    print("Modelo de ruteo construido correctamente.")
+    logging.info("Modelo de ruteo construido correctamente")
     return man, rout, time_dim
 
 def solve_vrp_simple(
     dist_m: List[List[float]],
     time_m: List[List[int]],
     vehicles: int,
-    depot: int,
+    depot_idx: int,
     balance: bool,
     start_min: int,
     service_time: int,
@@ -185,40 +194,35 @@ def solve_vrp_simple(
     max_minutes: int = 1440,
     cost_mode: bool = False
 ) -> Tuple[List[List[int]], List[Optional[int]], int]:
-    """Solve VRP and return routes, ETAs, and used vehicles."""
-    print("Iniciando solve_vrp_simple...")
-    print(f"Parámetros: vehicles={vehicles}, depot={depot}, balance={balance}, start_min={start_min}, service_time={service_time}, cost_mode={cost_mode}")
+    """Resuelve VRP y devuelve rutas, ETAs y vehículos usados."""
+    logging.info("Iniciando solve_vrp_simple con %d vehículos, depot_idx=%d, balance=%s, cost_mode=%s", 
+                 vehicles, depot_idx, balance, cost_mode)
     n = len(dist_m)
     validate_matrices(dist_m, time_m, n)
-
-    if not isinstance(depot, int) or depot < 0 or depot >= n:
-        raise ValueError(f"Depot index {depot} out of range [0, {n-1}]")
-    if vehicles < 1:
-        raise ValueError("Number of vehicles must be positive")
 
     if time_windows and len(time_windows) != n:
         raise ValueError(f"time_windows must have length {n}, got {len(time_windows)}")
 
     if respect_predefined and predefined_routes:
-        print("Respetando rutas predefinidas...")
+        logging.info("Respetando %d rutas predefinidas", len(predefined_routes))
         vehicles = len(predefined_routes)
         if vehicles == 0:
             st.warning("No se encontraron rutas predefinidas válidas.")
-            print("No se encontraron rutas predefinidas válidas.")
+            logging.warning("No se encontraron rutas predefinidas válidas")
             return [], [None] * n, 0
         routes = []
         eta = [None] * n
         used_vehicles = 0
         for route in predefined_routes:
             if not route:
-                routes.append([depot])
+                routes.append([depot_idx])
                 continue
             if not all(0 <= idx < n for idx in route):
                 st.warning(f"Ruta predefinida inválida: {route}. Ignorando.")
-                print(f"Ruta predefinida inválida: {route}")
-                routes.append([depot])
+                logging.warning("Ruta predefinida inválida: %s", route)
+                routes.append([depot_idx])
                 continue
-            sub_nodes = [depot] + route + [depot]
+            sub_nodes = [depot_idx] + route + [depot_idx]
             sub_indices = list(range(len(sub_nodes)))
             try:
                 sub_dist_m = [[dist_m[i][j] for j in sub_nodes] for i in sub_nodes]
@@ -227,14 +231,14 @@ def solve_vrp_simple(
                 sub_time_windows = [time_windows[i] if time_windows else (0, 1440) for i in sub_nodes] if time_windows else None
             except (IndexError, ValueError) as e:
                 st.warning(f"Error generando submatrices para ruta {route}: {e}. Ignorando.")
-                print(f"Error generando submatrices para ruta {route}: {e}")
-                routes.append([depot])
+                logging.warning("Error generando submatrices para ruta %s: %s", route, e)
+                routes.append([depot_idx])
                 continue
             man, rout, time_dim = build_routing_model(
                 dist_m=sub_dist_m,
                 time_m=sub_time_m,
                 vehicles=1,
-                depot=0,
+                depot_idx=0,
                 service_time=service_time,
                 start_min=start_min,
                 balance=False,
@@ -252,34 +256,35 @@ def solve_vrp_simple(
             sol = rout.SolveWithParameters(prm)
             if sol is None:
                 st.warning(f"No se encontró solución para ruta predefinida {route}.")
-                print(f"No se encontró solución para ruta predefinida {route}")
-                routes.append([depot])
+                logging.warning("No se encontró solución para ruta predefinida %s", route)
+                routes.append([depot_idx])
                 continue
             idx = rout.Start(0)
             sub_route = []
             while not rout.IsEnd(idx):
                 node = man.IndexToNode(idx)
                 sub_route.append(sub_nodes[node])
-                if sub_nodes[node] != depot:
+                if sub_nodes[node] != depot_idx:
                     eta[sub_nodes[node]] = sol.Value(time_dim.CumulVar(idx))
                 idx = sol.Value(rout.NextVar(idx))
-            sub_route.append(depot)
+            sub_route.append(depot_idx)
             routes.append(sub_route)
             used_vehicles += 1
         while len(routes) < vehicles:
-            routes.append([depot])
+            routes.append([depot_idx])
+        logging.info("Rutas predefinidas calculadas: %d vehículos usados", used_vehicles)
         return routes, eta, used_vehicles
     else:
         arc_cost_m = None
         if cost_mode:
-            print("Modo de costo activado, construyendo matriz de costos...")
+            logging.info("Modo de costo activado, construyendo matriz de costos")
             arc_cost_m = build_cost_matrix(dist_m, time_m, fuel_price, fuel_consumption, price_per_hour)
         man, rout, time_dim = build_routing_model(
             dist_m=dist_m,
             time_m=time_m,
             arc_cost_m=arc_cost_m,
             vehicles=vehicles,
-            depot=depot,
+            depot_idx=depot_idx,
             service_time=service_time,
             start_min=start_min,
             balance=balance,
@@ -300,33 +305,33 @@ def solve_vrp_simple(
         sol = rout.SolveWithParameters(prm)
         if sol is None:
             st.warning("No se encontró solución para el VRP. Intenta relajar restricciones.")
-            print("No se encontró solución para el VRP.")
+            logging.warning("No se encontró solución para el VRP")
             return [], [None] * n, 0
         routes = []
-        eta = [None] * len(dist_m)
+        eta = [None] * n
         for v in range(vehicles):
             idx = rout.Start(v)
             r = []
             while not rout.IsEnd(idx):
                 node = man.IndexToNode(idx)
                 r.append(node)
-                if node != depot:
+                if node != depot_idx:
                     eta[node] = sol.Value(time_dim.CumulVar(idx))
                 idx = sol.Value(rout.NextVar(idx))
-            r.append(man.IndexToNode(idx))
+            r.append(depot_idx)
             routes.append(r)
         used = sum(1 for r in routes if len(r) > 2)
         if used == 0:
             st.warning("Solo se generaron rutas vacías. Verifica las restricciones o datos de entrada.")
-            print("Solo se generaron rutas vacías.")
-        print("Rutas calculadas correctamente.")
+            logging.warning("Solo se generaron rutas vacías")
+        logging.info("Rutas calculadas correctamente: %d vehículos usados", used)
         return routes, eta, used
 
 def reassign_nearby_stops(
     routes: List[List[int]],
     dist_m: List[List[float]],
     time_m: List[List[int]],
-    depot: int,
+    depot_idx: int,
     balance: bool,
     start_min: int,
     service_time: int,
@@ -339,8 +344,8 @@ def reassign_nearby_stops(
     max_minutes: int = 1440,
     time_windows: List[Tuple[int, int]] = None
 ) -> Tuple[List[List[int]], List[Optional[int]], int]:
-    """Reassign nearby stops between routes to optimize clustering."""
-    print("Iniciando reassign_nearby_stops...")
+    """Reasigna paradas cercanas entre rutas para optimizar clustering."""
+    logging.info("Iniciando reassign_nearby_stops...")
     n = len(dist_m)
     vehicles = len(routes)
     validate_matrices(dist_m, time_m, n)
@@ -350,7 +355,7 @@ def reassign_nearby_stops(
         arc_cost_m=arc_cost_m,
         time_m=time_m,
         vehicles=vehicles,
-        depot=depot,
+        depot_idx=depot_idx,
         service_time=service_time,
         start_min=start_min,
         balance=balance,
@@ -400,7 +405,7 @@ def reassign_nearby_stops(
     sol = rout.SolveWithParameters(prm)
     if sol is None:
         st.warning("No se encontró solución al reasignar paradas cercanas. Devolviendo rutas originales.")
-        print("No se encontró solución al reasignar paradas cercanas.")
+        logging.warning("No se encontró solución al reasignar paradas cercanas")
         return routes, [None] * n, sum(1 for r in routes if len(r) > 2)
 
     new_routes, eta = [], [None] * n
@@ -410,14 +415,14 @@ def reassign_nearby_stops(
         while not rout.IsEnd(idx):
             node = man.IndexToNode(idx)
             r.append(node)
-            if node != depot:
+            if node != depot_idx:
                 eta[node] = sol.Value(time_dim.CumulVar(idx))
             idx = sol.Value(rout.NextVar(idx))
-        r.append(depot)
+        r.append(depot_idx)
         new_routes.append(r)
 
     used = sum(1 for r in new_routes if len(r) > 2)
-    print("Paradas cercanas reasignadas correctamente.")
+    logging.info("Paradas cercanas reasignadas correctamente: %d vehículos usados", used)
     return new_routes, eta, used
 
 def recompute_etas(
@@ -426,10 +431,11 @@ def recompute_etas(
     start_min: int,
     service_time: int,
     n: int,
-    time_windows: List[Tuple[int, int]] = None
+    time_windows: List[Tuple[int, int]] = None,
+    depot_idx: int = 0
 ) -> List[Optional[int]]:
-    """Recalculate ETAs for routes."""
-    print("Recalculando ETAs...")
+    """Recalcula ETAs para las rutas."""
+    logging.info("Recalculando ETAs...")
     validate_matrices([row[:n] for row in time_m[:n]], [row[:n] for row in time_m[:n]], n)
     eta = [None] * n
     violations = []
@@ -441,8 +447,10 @@ def recompute_etas(
         for i in range(1, len(r) - 1):
             prev, node = r[i - 1], r[i]
             t += time_m[prev][node] + service_time
-            if time_windows:
+            if time_windows and node != depot_idx:
                 start, end = time_windows[node]
+                start = int(max(0, min(start, 1440)))  # Clamp to [0, 1440]
+                end = int(max(start, min(end, 1440)))  # Ensure end >= start
                 if t < start:
                     t = start  # Esperar hasta que abra la ventana
                 if t > end:
@@ -453,6 +461,6 @@ def recompute_etas(
         eta[r[-1]] = t
     if violations:
         st.warning("Algunas ETAs no cumplen con las ventanas de tiempo: " + "; ".join(violations))
-        print("Violaciones de ventanas de tiempo: " + "; ".join(violations))
-    print("ETAs recalculados correctamente.")
+        logging.warning("Violaciones de ventanas de tiempo: %s", "; ".join(violations))
+    logging.info("ETAs recalculados correctamente")
     return eta

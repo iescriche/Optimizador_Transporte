@@ -505,19 +505,19 @@ def standard_planner():
                     print("Llamando a solve_vrp_simple...")
                     print(f"Parámetros: n={len(df_today)}, vehicles={vehs}, depot={depot_idx}")
                     routes, eta, used = solve_vrp_simple(
-                        dist_m=dist_m,
-                        time_m=time_m,
-                        vehicles=vehs,
-                        depot=depot_idx,
-                        balance=balance,
-                        start_min=start_time_minutes,
-                        service_time=service_time,
-                        time_windows=time_windows,
-                        max_stops_per_vehicle=max_stops_per_vehicle,
-                        balance_threshold=balance_threshold,
-                        predefined_routes=predefined_routes,
-                        respect_predefined=respect_predefined
-                    )
+                    dist_m=dist_m,
+                    time_m=time_m,
+                    vehicles=vehs,
+                    depot_idx=depot_idx,  # Cambiado de 'depot' a 'depot_idx'
+                    balance=balance,
+                    start_min=start_time_minutes,
+                    service_time=service_time,
+                    time_windows=time_windows,
+                    max_stops_per_vehicle=max_stops_per_vehicle,
+                    balance_threshold=balance_threshold,
+                    predefined_routes=predefined_routes,
+                    respect_predefined=respect_predefined
+                )
                     print(f"Resultado de solve_vrp_simple: routes={routes}, eta={eta}, used={used}")
                     
                     if not all(isinstance(route, list) for route in routes):
@@ -603,7 +603,7 @@ def standard_planner():
                         
                         wps = [f"{df_today.at[n, 'LATITUD']},{df_today.at[n, 'LONGITUD']}" for n in route[1:-1]]
                         url = f"https://www.google.com/maps/dir/{coords[route[0]][0]},{coords[route[0]][1]}/{'/'.join(wps)}/{coords[route[0]][0]},{coords[route[0]][1]}"
-                        links.append({"Vehículo": v, "Link": url})
+                        links.append({"Vehículo": v+1, "Link": url})
 
                     if polyline_failures > 0:
                         st.warning(f"Se usaron líneas rectas para {polyline_failures} segmentos debido a errores en la API de ORS.")
