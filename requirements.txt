@@ -6,3 +6,4 @@ pyyaml
 requests
 tenacity
 ortools
+openpyxl
